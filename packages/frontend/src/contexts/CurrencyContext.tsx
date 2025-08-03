@@ -11,9 +11,12 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-export const useCurrency = () => {
+export { CurrencyContext };
+
+// Custom hook to use currency context
+export const useCurrency = (): CurrencyContextType => {
   const context = useContext(CurrencyContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useCurrency must be used within a CurrencyProvider');
   }
   return context;

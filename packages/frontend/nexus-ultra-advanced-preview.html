@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏭 Nexus Mining - Ultra Advanced Dashboard Preview</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            height: 64px;
+            background: linear-gradient(to right, #1e293b, #1e40af, #1e293b);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .nav-section {
+            margin-left: auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: transparent;
+            color: #cbd5e1;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .nav-btn:hover:not(.active) {
+            background: #374151;
+            color: white;
+        }
+        .alerts-section {
+            background: linear-gradient(to right, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1.5rem;
+        }
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .alert-card {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+        .alert-critical {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+        .alert-info {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+        .kpi-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2);
+        }
+        .kpi-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .kpi-icon {
+            font-size: 2rem;
+        }
+        .kpi-trend {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .trend-up {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        .trend-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .trend-stable {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .kpi-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(31, 41, 55, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .progress-good { background: #22c55e; }
+        .progress-warning { background: #f59e0b; }
+        .progress-critical { background: #ef4444; }
+        .equipment-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            padding: 0 1.5rem 1.5rem;
+        }
+        .equipment-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .equipment-list {
+            margin-top: 1rem;
+        }
+        .equipment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .equipment-item:hover {
+            background: rgba(51, 65, 85, 0.8);
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+        .status-operational { background: #22c55e; }
+        .status-maintenance { background: #f59e0b; }
+        .status-critical { background: #ef4444; }
+        .realtime-section {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 0 1.5rem 1.5rem;
+        }
+        .realtime-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .realtime-item {
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 0.5rem;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .live-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            z-index: 1000;
+        }
+        .production-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .energy-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .ai-card {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2));
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="live-indicator">
+        🟢 LIVE - localhost:5173
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Enhanced Header -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo">🏭</div>
+                <div>
+                    <h1 style="font-size: 1.25rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Nexus Mining
+                    </h1>
+                    <p style="font-size: 0.75rem; color: #94a3b8;">Advanced Operations Platform</p>
+                </div>
+            </div>
+            <div class="nav-section">
+                <button class="nav-btn active">📊 Dashboard</button>
+                <button class="nav-btn">🌍 3D View</button>
+                <button class="nav-btn">🗺️ 2D Map</button>
+                <button class="nav-btn">📈 Analytics</button>
+                <button class="nav-btn">🚛 Assets</button>
+                <button class="nav-btn">🛡️ Safety</button>
+            </div>
+        </div>
+
+        <!-- Real-time Alerts -->
+        <div class="alerts-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 600; color: #ef4444;">🚨 Active Alerts</h3>
+                <div style="display: flex; gap: 1rem; font-size: 0.875rem;">
+                    <span style="color: #ef4444;">3 Critical</span>
+                    <span style="color: #f59e0b;">12 Warning</span>
+                    <span style="color: #3b82f6;">8 Info</span>
+                </div>
+            </div>
+            <div class="alerts-grid">
+                <div class="alert-card alert-critical">
+                    <p style="color: #fca5a5; font-weight: 500;">Excavator Beta-2: High vibration detected</p>
+                    <p style="color: #ef4444; font-size: 0.75rem;">Zone: Pit-A • 2 min ago</p>
+                </div>
+                <div class="alert-card alert-warning">
+                    <p style="color: #fcd34d; font-weight: 500;">Haul Truck Alpha-1: Maintenance due soon</p>
+                    <p style="color: #f59e0b; font-size: 0.75rem;">Zone: Pit-A • 15 min ago</p>
+                </div>
+                <div class="alert-card alert-info">
+                    <p style="color: #93c5fd; font-weight: 500;">Weather alert: High winds expected</p>
+                    <p style="color: #3b82f6; font-size: 0.75rem;">All zones • 1 hr ago</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Dashboard -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">⛏️</span>
+                    <span class="kpi-trend trend-up">+12.5%</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Production Rate</h3>
+                <div class="kpi-value">
+                    2,847 <span style="font-size: 0.875rem; color: #94a3b8;">tons/hr</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 87%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">📊</span>
+                    <span class="kpi-trend trend-up">+3.2%</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Operational Efficiency</h3>
+                <div class="kpi-value">
+                    89 <span style="font-size: 0.875rem; color: #94a3b8;">%</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 89%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">⚡</span>
+                    <span class="kpi-trend trend-down">-5.8%</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Energy Consumption</h3>
+                <div class="kpi-value">
+                    945 <span style="font-size: 0.875rem; color: #94a3b8;">kWh</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 78%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">🛡️</span>
+                    <span class="kpi-trend trend-stable">0.0%</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Safety Score</h3>
+                <div class="kpi-value">
+                    97 <span style="font-size: 0.875rem; color: #94a3b8;">%</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 97%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">🚛</span>
+                    <span class="kpi-trend trend-up">+2</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Active Equipment</h3>
+                <div class="kpi-value">
+                    156 <span style="font-size: 0.875rem; color: #94a3b8;">units</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 92%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">🔧</span>
+                    <span class="kpi-trend trend-down">-5</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Maintenance Due</h3>
+                <div class="kpi-value">
+                    23 <span style="font-size: 0.875rem; color: #94a3b8;">items</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-warning" style="width: 65%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">🌱</span>
+                    <span class="kpi-trend trend-up">+1.2%</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Environmental Impact</h3>
+                <div class="kpi-value">
+                    78 <span style="font-size: 0.875rem; color: #94a3b8;">%</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 78%;"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-icon">💰</span>
+                    <span class="kpi-trend trend-down">-2.1%</span>
+                </div>
+                <h3 style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">Cost per Ton</h3>
+                <div class="kpi-value">
+                    $45.32 <span style="font-size: 0.875rem; color: #94a3b8;">USD</span>
+                </div>
+                <div class="kpi-progress">
+                    <div class="progress-bar progress-good" style="width: 85%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment & Production -->
+        <div class="equipment-section">
+            <div class="equipment-card">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #3b82f6;">🚛 Equipment Status</h3>
+                <div class="equipment-list">
+                    <div class="equipment-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="status-dot status-operational"></div>
+                            <div>
+                                <p style="font-weight: 500; color: white;">Haul Truck Alpha-1</p>
+                                <p style="font-size: 0.875rem; color: #94a3b8;">John Maverick • Pit-A</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 0.875rem; font-weight: 500; color: #3b82f6;">92% efficiency</p>
+                            <p style="font-size: 0.75rem; color: #94a3b8;">8.5h runtime</p>
+                        </div>
+                    </div>
+                    <div class="equipment-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="status-dot status-maintenance"></div>
+                            <div>
+                                <p style="font-weight: 500; color: white;">Excavator Beta-2</p>
+                                <p style="font-size: 0.875rem; color: #94a3b8;">Sarah Chen • Pit-A</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 0.875rem; font-weight: 500; color: #f59e0b;">87% efficiency</p>
+                            <p style="font-size: 0.75rem; color: #94a3b8;">12.2h runtime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="equipment-card">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #22c55e;">📊 Production Analytics</h3>
+                <div style="margin-top: 1rem;">
+                    <div class="production-card" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <h4 style="font-weight: 500; color: #93c5fd; margin-bottom: 0.5rem;">Today's Production</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.5rem; font-weight: bold; color: white;">24,567 tons</span>
+                            <span style="color: #22c55e; font-size: 0.875rem;">+8.2% vs target</span>
+                        </div>
+                        <div style="width: 100%; background: rgba(59, 130, 246, 0.3); border-radius: 4px; height: 8px; margin-top: 0.5rem;">
+                            <div style="background: #3b82f6; height: 8px; border-radius: 4px; width: 87%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="energy-card" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <h4 style="font-weight: 500; color: #6ee7b7; margin-bottom: 0.5rem;">Energy Efficiency</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.5rem; font-weight: bold; color: white;">92.4%</span>
+                            <span style="color: #22c55e; font-size: 0.875rem;">Best this month</span>
+                        </div>
+                        <div style="width: 100%; background: rgba(34, 197, 94, 0.3); border-radius: 4px; height: 8px; margin-top: 0.5rem;">
+                            <div style="background: #22c55e; height: 8px; border-radius: 4px; width: 92%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-card" style="padding: 1rem; border-radius: 8px;">
+                        <h4 style="font-weight: 500; color: #c084fc; margin-bottom: 0.5rem;">AI Optimization</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.5rem; font-weight: bold; color: white;">15.3%</span>
+                            <span style="color: #a855f7; font-size: 0.875rem;">Cost reduction</span>
+                        </div>
+                        <div style="width: 100%; background: rgba(147, 51, 234, 0.3); border-radius: 4px; height: 8px; margin-top: 0.5rem;">
+                            <div style="background: #9333ea; height: 8px; border-radius: 4px; width: 78%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Data Feed -->
+        <div class="realtime-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: #06b6d4;">📡 Real-time Data Feed</h3>
+                <span style="font-size: 0.75rem; color: #94a3b8;" id="timestamp">Last update: Loading...</span>
+            </div>
+            <div class="realtime-grid">
+                <div class="realtime-item">
+                    <h4 style="font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">ThingsBoard IoT Status</h4>
+                    <div style="display: flex; align-items: center;">
+                        <div class="pulse-dot" style="background: #22c55e;"></div>
+                        <span style="color: #22c55e; font-size: 0.875rem;">Connected • 156 devices</span>
+                    </div>
+                </div>
+                <div class="realtime-item">
+                    <h4 style="font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">ThibaAlert Mobile</h4>
+                    <div style="display: flex; align-items: center;">
+                        <div class="pulse-dot" style="background: #3b82f6;"></div>
+                        <span style="color: #3b82f6; font-size: 0.875rem;">Active • 23 field reports</span>
+                    </div>
+                </div>
+                <div class="realtime-item">
+                    <h4 style="font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">HazardVision AI</h4>
+                    <div style="display: flex; align-items: center;">
+                        <div class="pulse-dot" style="background: #f59e0b;"></div>
+                        <span style="color: #f59e0b; font-size: 0.875rem;">Monitoring • 12 cameras</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate real-time data updates
+        function updateRealTimeData() {
+            const timestamp = new Date().toLocaleTimeString();
+            document.getElementById('timestamp').textContent = `Last update: ${timestamp}`;
+            
+            // Update production value
+            const productionValue = Math.floor(Math.random() * 500) + 2500;
+            const productionElements = document.querySelectorAll('.kpi-value');
+            if (productionElements[0]) {
+                productionElements[0].innerHTML = `${productionValue.toLocaleString()} <span style="font-size: 0.875rem; color: #94a3b8;">tons/hr</span>`;
+            }
+        }
+
+        // Update every 3 seconds
+        setInterval(updateRealTimeData, 3000);
+        updateRealTimeData();
+
+        // Console branding
+        console.log('%c🏭 Nexus Mining Ultra-Advanced Dashboard', 'color: #3b82f6; font-size: 2rem; font-weight: bold;');
+        console.log('%cRunning on localhost:5173', 'color: #06b6d4; font-size: 1rem;');
+        console.log('%c✅ All systems operational - Real React application ready', 'color: #22c55e;');
+        
+        // Add click handlers for navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                console.log(`Navigating to: ${btn.textContent}`);
+            });
+        });
+        
+        // Add click handlers for equipment items
+        document.querySelectorAll('.equipment-item').forEach(item => {
+            item.addEventListener('click', () => {
+                console.log('Equipment details would open in modal');
+                alert('Equipment details modal would open here in the real React application!');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -16,7 +16,7 @@ export interface Device {
   name: string;
   type: string;
   label?: string;
-  additionalInfo?: any;
+  additionalInfo?: Record<string, unknown>;
 }
 
 export interface TelemetryData {
@@ -134,7 +134,7 @@ class ThingsBoardService {
   }
 
   // Get latest telemetry values
-  async getLatestTelemetry(deviceId: string, keys: string[] = ['temperature', 'vibration', 'pressure']): Promise<{[key: string]: any}> {
+  async getLatestTelemetry(deviceId: string, keys: string[] = ['temperature', 'vibration', 'pressure']): Promise<{[key: string]: string | number}> {
     if (!this.authToken) {
       await this.authenticate();
     }
@@ -153,7 +153,7 @@ class ThingsBoardService {
 
       if (response.ok) {
         const data = await response.json();
-        const result: {[key: string]: any} = {};
+        const result: {[key: string]: string | number} = {};
         
         // Extract latest values
         Object.keys(data).forEach(key => {
@@ -192,18 +192,21 @@ class ThingsBoardService {
 
       // Determine status based on telemetry values
       let status: 'operational' | 'maintenance' | 'critical' = 'operational';
-      if (telemetry.temperature > 80 || telemetry.vibration > 10) {
+      const tempValue = typeof telemetry.temperature === 'number' ? telemetry.temperature : parseFloat(String(telemetry.temperature)) || 0;
+      const vibValue = typeof telemetry.vibration === 'number' ? telemetry.vibration : parseFloat(String(telemetry.vibration)) || 0;
+      
+      if (tempValue > 80 || vibValue > 10) {
         status = 'critical';
-      } else if (telemetry.temperature > 60 || telemetry.vibration > 7) {
+      } else if (tempValue > 60 || vibValue > 7) {
         status = 'maintenance';
       }
 
       assets.push({
         deviceId: device.id.id,
         deviceName: device.name,
-        temperature: telemetry.temperature || Math.floor(Math.random() * 100) + 20,
-        vibration: telemetry.vibration || Math.floor(Math.random() * 15) + 1,
-        pressure: telemetry.pressure || Math.floor(Math.random() * 50) + 10,
+        temperature: typeof telemetry.temperature === 'number' ? telemetry.temperature : parseFloat(String(telemetry.temperature)) || Math.floor(Math.random() * 100) + 20,
+        vibration: typeof telemetry.vibration === 'number' ? telemetry.vibration : parseFloat(String(telemetry.vibration)) || Math.floor(Math.random() * 15) + 1,
+        pressure: typeof telemetry.pressure === 'number' ? telemetry.pressure : parseFloat(String(telemetry.pressure)) || Math.floor(Math.random() * 50) + 10,
         status,
         lastUpdate: new Date(),
         location: {
@@ -218,7 +221,7 @@ class ThingsBoardService {
   }
 
   // WebSocket connection for real-time telemetry
-  connectWebSocket(deviceId: string, callback: (data: any) => void): WebSocket | null {
+  connectWebSocket(deviceId: string, callback: (data: unknown) => void): WebSocket | null {
     if (!this.authToken) {
       console.error('Authentication required for WebSocket connection');
       return null;

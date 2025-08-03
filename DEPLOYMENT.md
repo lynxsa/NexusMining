@@ -3,7 +3,8 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - pnpm package manager
 - Git
 
@@ -153,6 +154,7 @@ module.exports = {
 ### Error Tracking
 
 Integration points for:
+
 - Sentry for error tracking
 - LogRocket for session recording
 - Google Analytics for usage metrics
@@ -254,6 +256,7 @@ jobs:
 ## 📞 Support
 
 For technical support and questions:
-- Email: support@lynxsa.com
-- GitHub: https://github.com/lynxsa/NexusMining
+
+- Email: <support@lynxsa.com>
+- GitHub: <https://github.com/lynxsa/NexusMining>
 - Documentation: See README.md and docs/

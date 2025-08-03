@@ -1,0 +1,624 @@
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline, LayersControl, FeatureGroup } from 'react-leaflet';
+import { Icon, LatLngBounds, LatLng } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// 🗺️ Fix Leaflet default markers
+delete (Icon.Default.prototype as any)._getIconUrl;
+Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// 🏭 Enhanced Mining Asset Interface
+interface Enhanced2DMiningAsset {
+  id: string;
+  name: string;
+  type: 'truck' | 'excavator' | 'drill' | 'conveyor' | 'processing' | 'crusher' | 'loader' | 'dozer' | 'station' | 'zone';
+  latitude: number;
+  longitude: number;
+  status: 'operational' | 'maintenance' | 'critical' | 'offline' | 'standby' | 'emergency';
+  telemetry: {
+    speed?: number;
+    fuel?: number;
+    temperature?: number;
+    vibration?: number;
+    productivity?: number;
+    powerConsumption?: number;
+    operatingHours?: number;
+    lastMaintenance?: string;
+    route?: LatLng[];
+  };
+  zone?: string;
+  operator?: string;
+  shift?: 'day' | 'night';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  ai_insights?: {
+    efficiency_score: number;
+    predictive_maintenance: string;
+    optimization_suggestions: string[];
+    route_optimization?: {
+      current_route: LatLng[];
+      optimized_route: LatLng[];
+      time_saving: string;
+      fuel_saving: string;
+    };
+  };
+  safety_zone?: {
+    radius: number;
+    alert_level: 'safe' | 'caution' | 'danger';
+    restricted_access: boolean;
+  };
+}
+
+// 🎯 Advanced 2D Map Props Interface
+interface SuperAdvanced2DMapProps {
+  assets?: Enhanced2DMiningAsset[];
+  onAssetClick?: (asset: Enhanced2DMiningAsset) => void;
+  onMapClick?: (lat: number, lng: number) => void;
+  enableRouteOptimization?: boolean;
+  enableSafetyZones?: boolean;
+  enableHeatmaps?: boolean;
+  enableTrafficAnalysis?: boolean;
+  viewMode?: 'satellite' | 'terrain' | 'street' | 'hybrid' | 'mining';
+  className?: string;
+  zoomLevel?: number;
+  centerLat?: number;
+  centerLng?: number;
+  showControls?: boolean;
+}
+
+// 🌟 Super Advanced 2D Map Component
+export const SuperAdvanced2DMap: React.FC<SuperAdvanced2DMapProps> = ({
+  assets = [],
+  onAssetClick,
+  onMapClick,
+  enableRouteOptimization = true,
+  enableSafetyZones = true,
+  enableHeatmaps = false,
+  enableTrafficAnalysis = false,
+  viewMode = 'hybrid',
+  className = "h-full w-full",
+  zoomLevel = 10,
+  centerLat = -26.2041,
+  centerLng = 28.0473,
+  showControls = true
+}) => {
+  const [selectedAsset, setSelectedAsset] = useState<Enhanced2DMiningAsset | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<'none' | 'productivity' | 'safety' | 'routes' | 'zones'>('none');
+  const [showOptimizedRoutes, setShowOptimizedRoutes] = useState(false);
+
+  // 🏭 Enhanced South African Mining Sites Data
+  const enhanced2DMiningAssets = useMemo((): Enhanced2DMiningAsset[] => [
+    // Witwatersrand Basin - Gold Mining with Route Data
+    {
+      id: 'truck-wits-2d-001',
+      name: 'CAT 797F Haul Truck Alpha',
+      type: 'truck',
+      latitude: -26.2041,
+      longitude: 28.0473,
+      status: 'operational',
+      zone: 'Witwatersrand Gold Mine - Sector A',
+      operator: 'Sipho Mthembu',
+      shift: 'day',
+      priority: 'high',
+      telemetry: {
+        speed: 42,
+        fuel: 85,
+        temperature: 78,
+        productivity: 94,
+        route: [
+          new LatLng(-26.2041, 28.0473),
+          new LatLng(-26.2050, 28.0480),
+          new LatLng(-26.2065, 28.0495),
+          new LatLng(-26.2080, 28.0510),
+          new LatLng(-26.2090, 28.0525)
+        ]
+      },
+      ai_insights: {
+        efficiency_score: 92,
+        predictive_maintenance: 'Schedule brake inspection in 150 hours',
+        optimization_suggestions: ['Optimize route to reduce fuel by 8%', 'Adjust tire pressure'],
+        route_optimization: {
+          current_route: [
+            new LatLng(-26.2041, 28.0473),
+            new LatLng(-26.2050, 28.0480),
+            new LatLng(-26.2065, 28.0495)
+          ],
+          optimized_route: [
+            new LatLng(-26.2041, 28.0473),
+            new LatLng(-26.2055, 28.0485),
+            new LatLng(-26.2065, 28.0495)
+          ],
+          time_saving: '12 minutes',
+          fuel_saving: '8.5%'
+        }
+      },
+      safety_zone: {
+        radius: 50,
+        alert_level: 'safe',
+        restricted_access: false
+      }
+    },
+    // Platinum Belt - Processing Station
+    {
+      id: 'processing-plat-2d-001',
+      name: 'Platinum Processing Hub',
+      type: 'processing',
+      latitude: -25.6669,
+      longitude: 27.2406,
+      status: 'operational',
+      zone: 'Rustenburg Platinum Complex',
+      operator: 'Central Control',
+      shift: 'day',
+      priority: 'critical',
+      telemetry: {
+        temperature: 92,
+        productivity: 87,
+        powerConsumption: 1200
+      },
+      ai_insights: {
+        efficiency_score: 89,
+        predictive_maintenance: 'All systems optimal',
+        optimization_suggestions: ['Increase throughput capacity', 'Optimize power consumption']
+      },
+      safety_zone: {
+        radius: 100,
+        alert_level: 'caution',
+        restricted_access: true
+      }
+    },
+    // Northern Cape - Iron Ore Route Network
+    {
+      id: 'station-iron-2d-001',
+      name: 'Sishen Loading Station',
+      type: 'station',
+      latitude: -27.8546,
+      longitude: 22.9375,
+      status: 'operational',
+      zone: 'Sishen Iron Ore Complex',
+      operator: 'Loading Control',
+      shift: 'day',
+      priority: 'high',
+      telemetry: {
+        productivity: 96,
+        powerConsumption: 450
+      },
+      ai_insights: {
+        efficiency_score: 95,
+        predictive_maintenance: 'Scheduled maintenance next week',
+        optimization_suggestions: ['Optimize loading sequence', 'Reduce waiting times']
+      },
+      safety_zone: {
+        radius: 75,
+        alert_level: 'safe',
+        restricted_access: false
+      }
+    },
+    // Coal Mining - Mpumalanga Zone Network
+    {
+      id: 'zone-coal-2d-001',
+      name: 'Coal Mining Zone Delta',
+      type: 'zone',
+      latitude: -25.9747,
+      longitude: 29.1618,
+      status: 'operational',
+      zone: 'Mpumalanga Coal Fields - Delta Sector',
+      operator: 'Zone Controller',
+      shift: 'day',
+      priority: 'medium',
+      telemetry: {
+        productivity: 88,
+        powerConsumption: 200
+      },
+      ai_insights: {
+        efficiency_score: 91,
+        predictive_maintenance: 'Zone equipment in good condition',
+        optimization_suggestions: ['Expand extraction area', 'Improve conveyor efficiency']
+      },
+      safety_zone: {
+        radius: 200,
+        alert_level: 'caution',
+        restricted_access: true
+      }
+    },
+    // Critical Asset - Emergency Response
+    {
+      id: 'emergency-resp-001',
+      name: 'Emergency Response Unit',
+      type: 'station',
+      latitude: -26.1500,
+      longitude: 28.1000,
+      status: 'standby',
+      zone: 'Central Emergency Hub',
+      operator: 'Emergency Team Alpha',
+      shift: 'day',
+      priority: 'critical',
+      telemetry: {
+        productivity: 100,
+        powerConsumption: 50
+      },
+      ai_insights: {
+        efficiency_score: 98,
+        predictive_maintenance: 'All emergency systems ready',
+        optimization_suggestions: ['Maintain readiness status', 'Regular equipment checks']
+      },
+      safety_zone: {
+        radius: 300,
+        alert_level: 'safe',
+        restricted_access: false
+      }
+    }
+  ], []);
+
+  // 🎨 Get Asset Color Based on Status
+  const getAssetColor = useCallback((status: Enhanced2DMiningAsset['status']): string => {
+    switch (status) {
+      case 'operational': return '#10b981'; // green
+      case 'maintenance': return '#f59e0b'; // yellow
+      case 'critical': return '#ef4444'; // red
+      case 'offline': return '#6b7280'; // gray
+      case 'standby': return '#f97316'; // orange
+      case 'emergency': return '#dc2626'; // dark red
+      default: return '#3b82f6'; // blue
+    }
+  }, []);
+
+  // 🎯 Get Asset Icon Based on Type
+  const getAssetIcon = useCallback((asset: Enhanced2DMiningAsset) => {
+    const color = getAssetColor(asset.status);
+    const iconMap = {
+      truck: '🚛',
+      excavator: '🏗️',
+      drill: '⚒️',
+      conveyor: '🔄',
+      processing: '🏭',
+      crusher: '⚙️',
+      loader: '🏗️',
+      dozer: '🚜',
+      station: '🏢',
+      zone: '🏭'
+    };
+    
+    return new Icon({
+      iconUrl: `data:image/svg+xml;base64,${btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32">
+          <circle cx="32" cy="32" r="28" fill="${color}" stroke="#ffffff" stroke-width="4"/>
+          <text x="32" y="40" text-anchor="middle" font-size="20" fill="white">${iconMap[asset.type]}</text>
+          <circle cx="50" cy="14" r="8" fill="${asset.status === 'operational' ? '#10b981' : asset.status === 'critical' ? '#ef4444' : '#f59e0b'}" stroke="#ffffff" stroke-width="2"/>
+        </svg>
+      `)}`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    });
+  }, [getAssetColor]);
+
+  // 🎨 Get Safety Zone Color
+  const getSafetyZoneColor = useCallback((alertLevel: 'safe' | 'caution' | 'danger'): string => {
+    switch (alertLevel) {
+      case 'safe': return '#10b981';
+      case 'caution': return '#f59e0b';
+      case 'danger': return '#ef4444';
+      default: return '#6b7280';
+    }
+  }, []);
+
+  // 🗺️ Map Event Handlers Component
+  const MapEventHandler: React.FC = () => {
+    const map = useMap();
+    
+    useEffect(() => {
+      const handleClick = (e: any) => {
+        onMapClick?.(e.latlng.lat, e.latlng.lng);
+      };
+      
+      map.on('click', handleClick);
+      return () => {
+        map.off('click', handleClick);
+      };
+    }, [map]);
+
+    return null;
+  };
+
+  // 🎯 Auto-fit bounds to show all assets
+  const MapBoundsController: React.FC = () => {
+    const map = useMap();
+    
+    useEffect(() => {
+      const combinedAssets = [...enhanced2DMiningAssets, ...assets];
+      if (combinedAssets.length > 0) {
+        const bounds = new LatLngBounds(
+          combinedAssets.map(asset => [asset.latitude, asset.longitude])
+        );
+        map.fitBounds(bounds, { padding: [20, 20] });
+      }
+    }, [map]);
+
+    return null;
+  };
+
+  // 🎨 Render Component
+  return (
+    <div className={`relative ${className}`}>
+      <MapContainer
+        center={[centerLat, centerLng]}
+        zoom={zoomLevel}
+        className="h-full w-full z-10"
+        zoomControl={showControls}
+      >
+        {/* 🗺️ Map Event Handler */}
+        <MapEventHandler />
+        <MapBoundsController />
+
+        {/* 🗺️ Layer Controls */}
+        <LayersControl position="topright">
+          {/* 🛰️ Satellite Layer */}
+          <LayersControl.BaseLayer checked={viewMode === 'satellite'} name="🛰️ Satellite">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution="&copy; Esri &mdash; Source: Esri, Maxar, GeoEye"
+            />
+          </LayersControl.BaseLayer>
+
+          {/* 🗺️ Street Map */}
+          <LayersControl.BaseLayer checked={viewMode === 'street'} name="🗺️ Street Map">
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; OpenStreetMap contributors"
+            />
+          </LayersControl.BaseLayer>
+
+          {/* 🏔️ Terrain Layer */}
+          <LayersControl.BaseLayer checked={viewMode === 'terrain'} name="🏔️ Terrain">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+              attribution="&copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+            />
+          </LayersControl.BaseLayer>
+
+          {/* 🏭 Mining Overlay */}
+          <LayersControl.BaseLayer checked={viewMode === 'mining'} name="🏭 Mining Sites">
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; OpenStreetMap contributors"
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
+
+        {/* 📍 Asset Markers */}
+        <FeatureGroup>
+          {[...enhanced2DMiningAssets, ...assets].map((asset) => (
+            <Marker
+              key={asset.id}
+              position={[asset.latitude, asset.longitude]}
+              icon={getAssetIcon(asset)}
+              eventHandlers={{
+                click: () => {
+                  setSelectedAsset(asset);
+                  onAssetClick?.(asset);
+                }
+              }}
+            >
+              <Popup>
+                <div className="p-2 min-w-[200px]">
+                  <h3 className="font-bold text-lg text-blue-600 mb-2">{asset.name}</h3>
+                  <div className="space-y-1 text-sm">
+                    <div>
+                      <span className="font-semibold">Status:</span>
+                      <span className={`ml-2 px-2 py-1 rounded text-xs font-semibold text-white ${
+                        asset.status === 'operational' ? 'bg-green-600' :
+                        asset.status === 'critical' ? 'bg-red-600' : 'bg-yellow-600'
+                      }`}>
+                        {asset.status.toUpperCase()}
+                      </span>
+                    </div>
+                    <div><span className="font-semibold">Zone:</span> {asset.zone}</div>
+                    <div><span className="font-semibold">Operator:</span> {asset.operator}</div>
+                    {asset.telemetry.productivity && (
+                      <div><span className="font-semibold">Productivity:</span> {asset.telemetry.productivity}%</div>
+                    )}
+                    {asset.ai_insights && (
+                      <div className="mt-2 p-2 bg-blue-100 rounded">
+                        <div className="font-semibold text-blue-800">🤖 AI Insights</div>
+                        <div className="text-xs text-blue-700">
+                          Efficiency: {asset.ai_insights.efficiency_score}%
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </FeatureGroup>
+
+        {/* 🛡️ Safety Zones */}
+        {enableSafetyZones && (
+          <FeatureGroup>
+            {[...enhanced2DMiningAssets, ...assets]
+              .filter(asset => asset.safety_zone)
+              .map((asset) => (
+                <Circle
+                  key={`safety-${asset.id}`}
+                  center={[asset.latitude, asset.longitude]}
+                  radius={asset.safety_zone!.radius}
+                  pathOptions={{
+                    color: getSafetyZoneColor(asset.safety_zone!.alert_level),
+                    fillColor: getSafetyZoneColor(asset.safety_zone!.alert_level),
+                    fillOpacity: 0.2,
+                    weight: 2,
+                    dashArray: asset.safety_zone!.restricted_access ? '10, 10' : undefined
+                  }}
+                />
+              ))}
+          </FeatureGroup>
+        )}
+
+        {/* 🛣️ Asset Routes */}
+        {enableRouteOptimization && (
+          <FeatureGroup>
+            {[...enhanced2DMiningAssets, ...assets]
+              .filter(asset => asset.telemetry.route && asset.telemetry.route.length > 1)
+              .map((asset) => (
+                <Polyline
+                  key={`route-${asset.id}`}
+                  positions={asset.telemetry.route!}
+                  pathOptions={{
+                    color: getAssetColor(asset.status),
+                    weight: 4,
+                    opacity: 0.7
+                  }}
+                />
+              ))}
+          </FeatureGroup>
+        )}
+
+        {/* 🎯 Optimized Routes */}
+        {showOptimizedRoutes && enableRouteOptimization && (
+          <FeatureGroup>
+            {[...enhanced2DMiningAssets, ...assets]
+              .filter(asset => asset.ai_insights?.route_optimization?.optimized_route)
+              .map((asset) => (
+                <Polyline
+                  key={`optimized-route-${asset.id}`}
+                  positions={asset.ai_insights!.route_optimization!.optimized_route}
+                  pathOptions={{
+                    color: '#10b981',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 5'
+                  }}
+                />
+              ))}
+          </FeatureGroup>
+        )}
+      </MapContainer>
+
+      {/* 📊 Asset Info Panel */}
+      {selectedAsset && (
+        <div className="absolute top-4 right-4 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-2xl max-w-sm z-50">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">{selectedAsset.name}</h3>
+            <button
+              onClick={() => setSelectedAsset(null)}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+          
+          <div className="space-y-3 text-sm">
+            <div>
+              <span className="text-slate-600 dark:text-slate-400">Status:</span>
+              <span className={`ml-2 px-2 py-1 rounded text-xs font-semibold text-white ${
+                selectedAsset.status === 'operational' ? 'bg-green-600' :
+                selectedAsset.status === 'critical' ? 'bg-red-600' : 'bg-yellow-600'
+              }`}>
+                {selectedAsset.status.toUpperCase()}
+              </span>
+            </div>
+            
+            <div>
+              <span className="text-slate-600 dark:text-slate-400">Zone:</span>
+              <span className="ml-2 text-slate-800 dark:text-white">{selectedAsset.zone}</span>
+            </div>
+            
+            <div>
+              <span className="text-slate-600 dark:text-slate-400">Operator:</span>
+              <span className="ml-2 text-slate-800 dark:text-white">{selectedAsset.operator}</span>
+            </div>
+
+            {selectedAsset.telemetry.productivity !== undefined && (
+              <div>
+                <span className="text-slate-600 dark:text-slate-400">Productivity:</span>
+                <span className="ml-2 text-green-600 dark:text-green-400 font-semibold">
+                  {selectedAsset.telemetry.productivity}%
+                </span>
+              </div>
+            )}
+
+            {selectedAsset.ai_insights && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900 bg-opacity-50 rounded">
+                <h4 className="text-blue-600 dark:text-blue-400 font-semibold mb-2">🤖 AI Insights</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">
+                  Efficiency: {selectedAsset.ai_insights.efficiency_score}%
+                </p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                  {selectedAsset.ai_insights.predictive_maintenance}
+                </p>
+                {selectedAsset.ai_insights.route_optimization && (
+                  <div className="mt-2 text-xs">
+                    <div className="text-green-600 dark:text-green-400">
+                      🛣️ Route Optimization: {selectedAsset.ai_insights.route_optimization.time_saving} saved
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {selectedAsset.safety_zone && (
+              <div className="mt-3 p-2 bg-slate-50 dark:bg-slate-700 rounded">
+                <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">🛡️ Safety Zone</h5>
+                <p className="text-xs">
+                  Radius: {selectedAsset.safety_zone.radius}m | 
+                  Level: <span className={`font-semibold ${
+                    selectedAsset.safety_zone.alert_level === 'safe' ? 'text-green-600' :
+                    selectedAsset.safety_zone.alert_level === 'caution' ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
+                    {selectedAsset.safety_zone.alert_level.toUpperCase()}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 🎛️ Controls Panel */}
+      <div className="absolute bottom-4 left-4 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-2xl z-50">
+        <h4 className="text-sm font-semibold mb-3 text-blue-600 dark:text-blue-400">🎯 Map Controls</h4>
+        <div className="space-y-2">
+          <button
+            onClick={() => setAnalysisMode(analysisMode === 'productivity' ? 'none' : 'productivity')}
+            className={`w-full text-left px-3 py-2 rounded text-xs transition-colors ${
+              analysisMode === 'productivity' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            📊 Productivity Analysis
+          </button>
+          <button
+            onClick={() => setAnalysisMode(analysisMode === 'safety' ? 'none' : 'safety')}
+            className={`w-full text-left px-3 py-2 rounded text-xs transition-colors ${
+              analysisMode === 'safety' ? 'bg-red-600 text-white' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            🦺 Safety Monitoring
+          </button>
+          <button
+            onClick={() => setShowOptimizedRoutes(!showOptimizedRoutes)}
+            className={`w-full text-left px-3 py-2 rounded text-xs transition-colors ${
+              showOptimizedRoutes ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            🛣️ Optimized Routes
+          </button>
+          <button
+            onClick={() => setAnalysisMode(analysisMode === 'zones' ? 'none' : 'zones')}
+            className={`w-full text-left px-3 py-2 rounded text-xs transition-colors ${
+              analysisMode === 'zones' ? 'bg-purple-600 text-white' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            🏭 Mining Zones
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 🔄 Export both components for backward compatibility
+export const Advanced2DMap = SuperAdvanced2DMap;
+export default SuperAdvanced2DMap;

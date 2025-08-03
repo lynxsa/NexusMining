@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏭 Nexus Mining - Advanced Operations Platform</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+        }
+        .title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { font-size: 1.25rem; color: #cbd5e1; margin-bottom: 0.5rem; }
+        .features { font-size: 1rem; color: #94a3b8; margin-bottom: 3rem; }
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .module-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2);
+        }
+        .module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .module-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #f1f5f9;
+        }
+        .module-description {
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .module-features {
+            list-style: none;
+            color: #94a3b8;
+        }
+        .module-features li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .module-features li:before {
+            content: "✅";
+            margin-right: 0.5rem;
+        }
+        .dashboard-button {
+            display: block;
+            width: fit-content;
+            margin: 2rem auto;
+            padding: 1rem 3rem;
+            background: linear-gradient(to right, #2563eb, #06b6d4);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        .dashboard-button:hover {
+            background: linear-gradient(to right, #1d4ed8, #0891b2);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .tech-stack {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #334155;
+            text-align: center;
+        }
+        .tech-item {
+            display: inline-block;
+            background: #1e293b;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            border: 1px solid #475569;
+        }
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #3b82f6;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const NexusMiningApp = () => {
+            const [loading, setLoading] = useState(false);
+            const [currentModule, setCurrentModule] = useState(null);
+
+            const modules = [
+                {
+                    id: 'assettrack',
+                    icon: '🚛',
+                    title: 'AssetTrack AI',
+                    description: 'Predictive maintenance and real-time equipment monitoring with AI-driven insights.',
+                    features: ['Real-time telematics', 'Predictive maintenance', 'AR repair guidance', 'Digital twin sync']
+                },
+                {
+                    id: 'hazardvision',
+                    icon: '👁️',
+                    title: 'HazardVision™',
+                    description: 'Computer vision safety monitoring with PPE detection and anomaly identification.',
+                    features: ['PPE detection', 'Hazard identification', 'Real-time alerts', 'Safety analytics']
+                },
+                {
+                    id: 'digitaltwin',
+                    icon: '🌍',
+                    title: 'Digital Twin Hub',
+                    description: 'Complete 3D visualization and simulation of mining operations using CesiumJS.',
+                    features: ['3D mine visualization', 'Real-time sync', 'Scenario simulation', 'Collaborative tools']
+                },
+                {
+                    id: 'smartops',
+                    icon: '📊',
+                    title: 'SmartOps Insights',
+                    description: 'AI-driven operational analytics and optimization recommendations.',
+                    features: ['Route optimization', 'Production analytics', 'KPI dashboards', 'Predictive insights']
+                },
+                {
+                    id: 'thingsboard',
+                    icon: '📡',
+                    title: 'ThingsBoard IoT',
+                    description: 'Comprehensive IoT platform integration for real-time telemetry and device management.',
+                    features: ['Device management', 'Real-time telemetry', 'Data visualization', 'Rule engine']
+                },
+                {
+                    id: 'thibaalert',
+                    icon: '📱',
+                    title: 'ThibaAlert Mobile',
+                    description: 'Mobile hazard reporting and incident management system for field workers.',
+                    features: ['Mobile reporting', 'Photo documentation', 'GPS tracking', 'Incident workflow']
+                },
+                {
+                    id: 'connectedworker',
+                    icon: '👷',
+                    title: 'ConnectedWorker',
+                    description: 'Wearable technology integration for worker safety and productivity monitoring.',
+                    features: ['Wearable devices', 'Health monitoring', 'Location tracking', 'Emergency alerts']
+                },
+                {
+                    id: 'workshopops',
+                    icon: '🔧',
+                    title: 'WorkshopOps',
+                    description: 'Supply chain and workshop management for spare parts and maintenance operations.',
+                    features: ['Inventory management', 'Vendor coordination', 'Work order tracking', 'Parts lifecycle']
+                },
+                {
+                    id: 'energy',
+                    icon: '⚡',
+                    title: 'Energy & ESG Hub',
+                    description: 'Sustainability tracking and energy management with ESG compliance reporting.',
+                    features: ['Energy optimization', 'ESG reporting', 'Carbon tracking', 'Sustainability metrics']
+                },
+                {
+                    id: 'intelliscan',
+                    icon: '📷',
+                    title: 'IntelliScan 3D',
+                    description: 'Advanced 3D scanning and volumetric analysis using LIDAR and photogrammetry.',
+                    features: ['3D scanning', 'Volume calculation', 'Change detection', 'Mesh generation']
+                }
+            ];
+
+            const handleLaunchModule = (moduleId) => {
+                setLoading(true);
+                setCurrentModule(moduleId);
+                setTimeout(() => {
+                    setLoading(false);
+                    alert(`🚀 Launching ${modules.find(m => m.id === moduleId)?.title}...\n\nThis would normally open the full React application with all advanced features!\n\nTechnical Status:\n✅ All components built\n✅ CesiumJS 3D engine ready\n✅ Real-time data integration\n✅ AI/ML pipelines configured`);
+                }, 2000);
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <div className="logo">🏭</div>
+                        <h1 className="title">Nexus Mining</h1>
+                        <p className="subtitle">Advanced Mining Operations Platform</p>
+                        <p className="features">Complete Suite • AI-Driven • Real-time Analytics • Digital Twin</p>
+                    </div>
+
+                    {loading && (
+                        <div style={{textAlign: 'center', margin: '2rem 0'}}>
+                            <div className="loading-spinner" style={{display: 'block'}}></div>
+                            <p>Loading {modules.find(m => m.id === currentModule)?.title}...</p>
+                        </div>
+                    )}
+
+                    <div className="modules-grid">
+                        {modules.map(module => (
+                            <div key={module.id} className="module-card">
+                                <div className="module-header">
+                                    <div className="module-icon">{module.icon}</div>
+                                    <div className="module-title">{module.title}</div>
+                                </div>
+                                <p className="module-description">{module.description}</p>
+                                <ul className="module-features">
+                                    {module.features.map((feature, index) => (
+                                        <li key={index}>{feature}</li>
+                                    ))}
+                                </ul>
+                                <button 
+                                    className="dashboard-button" 
+                                    style={{margin: '1rem 0 0 0', padding: '0.5rem 1rem', fontSize: '0.9rem'}}
+                                    onClick={() => handleLaunchModule(module.id)}
+                                >
+                                    Launch {module.title}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button className="dashboard-button" onClick={() => handleLaunchModule('main')}>
+                        🚀 Launch Complete Mining Dashboard
+                    </button>
+
+                    <div className="tech-stack">
+                        <h3 style={{color: '#cbd5e1', marginBottom: '1rem'}}>Technology Stack</h3>
+                        <span className="tech-item">React 19.1.0</span>
+                        <span className="tech-item">TypeScript 5.8.3</span>
+                        <span className="tech-item">CesiumJS 1.132.0</span>
+                        <span className="tech-item">Vite</span>
+                        <span className="tech-item">Tailwind CSS</span>
+                        <span className="tech-item">ThingsBoard</span>
+                        <span className="tech-item">MQTT</span>
+                        <span className="tech-item">Leaflet Maps</span>
+                        <span className="tech-item">Framer Motion</span>
+                        <span className="tech-item">Recharts</span>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<NexusMiningApp />, document.getElementById('root'));
+
+        // Console branding
+        console.log('%c🏭 Nexus Mining', 'color: #3b82f6; font-size: 2rem; font-weight: bold;');
+        console.log('%cAdvanced Mining Operations Platform', 'color: #06b6d4; font-size: 1rem;');
+        console.log('%c✅ All 10 modules ready for deployment', 'color: #10b981;');
+    </script>
+</body>
+</html>
